@@ -3,21 +3,21 @@ package com.daJiMu.shapes;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RectangularShape;
 
-public class Shape7 extends ShapeRoot {
-	
-	RectangularShape rect1;
-	RectangularShape rect2;
+public class Shape7 extends ShapeRoot {	
+	{
+		rect = new Arc2D.Double(x, y, width, hight, 0, 180, Arc2D.CHORD);
+		localShape = AffineTransform.getRotateInstance(Math.toRadians(angle), centerX, centerY).createTransformedShape(rect);
+	}
 	
 	//shape7 半圆
+	/**
+	 * 采用 合成逻辑 -> 交叉逻辑 -> 绘制逻辑
+	 */
 	
 	/**
 	 * 
@@ -29,21 +29,7 @@ public class Shape7 extends ShapeRoot {
 	public Shape7(int width,int hight,int centerX,int centerY) {
 		super(width,hight,centerX,centerY);
 		x = centerX - width / 2;
-		y = centerY - hight / 2;
-		rect1 = new Rectangle2D.Double(x,y+hight,width,hight);
-		rect2 = new Ellipse2D.Double(x,y,width,hight * 2);
-	}
-	
-	/**
-	 * 判断与其他矩形是否相撞
-	 * @param rec
-	 * @return
-	 */
-	public boolean intersects(ShapeRoot rec) {
-		Area a = new Area(rect2);
-		a.subtract(new Area(rect1));
-		a.intersect(new Area(rec));
-		return !a.isEmpty();
+		y = centerY - hight / 4;
 	}
 	
 	/**
@@ -54,6 +40,9 @@ public class Shape7 extends ShapeRoot {
 	public boolean intersects(Area area) {
 		Area as = this.toArea();
 		as.intersect(area);
+		if (!as.isEmpty()) {
+			touchArea = as.getBounds2D();
+		}
 		return !as.isEmpty();
 	}
 	
@@ -62,98 +51,34 @@ public class Shape7 extends ShapeRoot {
 	 */
 	@Override
 	public Area toArea() {
-		Area a = new Area(rect2);
-		a.subtract(new Area(rect1));
-		return a;
+		return new Area(localShape);
 	}
 	
 	@Override
 	public void drawShape(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
-		rect1 = new Rectangle2D.Double(x,y+hight,width,hight);
-		rect2 = new Ellipse2D.Double(x,y,width,hight*2);
-		Area a = new Area(rect2);
-		a.subtract(new Area(rect1));
+		/**
+		 * @version 1.0
+		 * rect1 = new Rectangle2D.Double(x,y+hight,width,hight);
+		 * rect2 = new Ellipse2D.Double(x,y,width,hight*2);
+		 * Area a = new Area(rect2);
+		 * a.subtract(new Area(rect1));
+		 * g2.rotate(Math.toRadians(angle),centerX,centerY);
+		 * g2.fill(a);
+		 * g2.rotate(Math.toRadians(-angle),centerX,centerY);
+		 */
 		g2.setColor(Color.PINK);
 		x = centerX - width / 2;
-		y = centerY - hight / 2;
-		g2.rotate(Math.toRadians(angle),centerX,centerY);
+		y = centerY - hight / 4;
+		rect = new Arc2D.Double(x, y, width, hight, 0, 180, Arc2D.CHORD);
+		localShape = AffineTransform.getRotateInstance(Math.toRadians(angle), centerX, centerY).createTransformedShape(rect);
 		//画一个半圆
-		g2.fill(a);
+		g2.fill(localShape);
 		g2.setColor(Color.BLACK);
-		g2.rotate(Math.toRadians(-angle),centerX,centerY);
 	}
 	
-	/**
-	 * 返回一个完全包围 Shape 的整型 Rectangle
-	 */
 	@Override
-	public Rectangle getBounds() {
-		return rect.getBounds();
+	public boolean contains(Point2D p) {
+		return localShape.contains(p);
 	}
-
-	/**
-	 * 返回一个高精度的、比 getBounds 方法更准确的 Shape 边界框
-	 */
-	@Override
-	public Rectangle2D getBounds2D() {
-		return rect.getBounds2D();
-	}
-
-	/**
-	 * 测试指定坐标是否在 Shape 的边界内
-	 */
-	@Override
-	public boolean contains(double x, double y) {
-		return this.contains(new Point2D.Double(x,y));
-	}
-
-	/**
-	 * 测试 Shape 内部是否与指定矩形区域的内部相交
-	 */
-	@Override
-	public boolean intersects(double x, double y, double w, double h) {
-		return rect.intersects(x, y, w, h);
-	}
-
-	/**
-	 * 测试 Shape 内部是否与指定 Rectangle2D(矩形) 内部相交
-	 */
-	@Override
-	public boolean intersects(Rectangle2D r) {
-		return rect.intersects(r);
-	}
-
-	/**
-	 * 测试 Shape 内部是否完全包含指定矩形区域
-	 */
-	@Override
-	public boolean contains(double x, double y, double w, double h) {
-		return rect.contains(x, y, w, h);
-	}
-
-	/**
-	 * 测试 Shape 内部是否完全包含指定的 Rectangle2D(矩形)
-	 */
-	@Override
-	public boolean contains(Rectangle2D r) {
-		return rect.contains(r);
-	}
-
-	/**
-	 * 返回一个沿着 Shape 边界迭代并提供对 Shape 轮廓几何形状的访问的迭代器对象
-	 */
-	@Override
-	public PathIterator getPathIterator(AffineTransform at) {
-		return rect.getPathIterator(at);
-	}
-
-	/**
-	 * 返回一个沿着 Shape 边界迭代并提供对 Shape 轮廓几何形状的平面视图访问的迭代器对象
-	 */
-	@Override
-	public PathIterator getPathIterator(AffineTransform at, double flatness) {
-		return rect.getPathIterator(at, flatness);
-	}
-
 }

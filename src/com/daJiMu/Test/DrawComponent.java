@@ -3,6 +3,7 @@ package com.daJiMu.Test;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 
 import javax.swing.*;
 
@@ -64,7 +65,7 @@ public class DrawComponent extends JComponent {
 	
 	private boolean bol = false;
 	
-	Timer timer;
+	private Timer timer;
 	
 	public DrawComponent(){
 		/**
@@ -86,9 +87,9 @@ public class DrawComponent extends JComponent {
 		paintWall(g);
 		paintWait(g);
 		BOTTOM_SP.drawShape(g);
-		/*Graphics2D g2 = (Graphics2D)g;
+		Graphics2D g2 = (Graphics2D)g;
 		g2.setColor(Color.BLACK);
-		g2.fill(areaTotal);*/
+		g2.fill(areaTotal);
 		if (bol) {
 			bol = false;
 			timer.start();
@@ -147,7 +148,7 @@ public class DrawComponent extends JComponent {
 	 * 定时器，用于块的下落动画
 	 */
 	public void init() {
-		timer = new Timer(1, e -> {
+		timer = new Timer(5, e -> {
 			while(currentShape == null);
 			switch(currentShape.shapeState) {
 			case ShapeRoot.DEFALUT_STATE: 
@@ -160,9 +161,8 @@ public class DrawComponent extends JComponent {
 			case ShapeRoot.DROP_STATE:
 				//判断是否需要将状态改变为 -- 接触
 				if(currentShape.intersects(areaTotal)){
-			
-					currentShape.shapeState = ShapeRoot.CROSS_STATE;
 					areaTotal.add(currentShape.toArea());
+					currentShape.shapeState = ShapeRoot.CROSS_STATE;
 					System.out.println("state changed");
 				}
 				//判断是否需要将状态改变为 -- 默认(拉进去又拉出来)
@@ -173,7 +173,27 @@ public class DrawComponent extends JComponent {
 			case ShapeRoot.CROSS_STATE:
 				//判断是否需要将状态改变为 -- 稳定
 				//TODO 执行翻转逻辑,翻转之后稳定。判断重心位置是否在多个触点之间，如果是接触线，则变为线段两端点
-				currentShape.shapeState = ShapeRoot.STABLE_STATE;
+				Point2D p = null;
+				if (currentShape.touchArea != null) {
+					//得到相交点
+					p = new Point2D.Double(currentShape.touchArea.getCenterX(),currentShape.touchArea.getCenterY());
+					//判断重心与相交点的位置关系，进行旋转
+					/*if (p.getX() < currentShape.centerX) {
+						//旋转的绕点需要改变
+						currentShape.isCenterRotate = false;
+						currentShape.setRotateCenter(p);
+						currentShape.angle++;
+						repaint();
+					}else if (p.getX() > currentShape.centerX) {
+						currentShape.isCenterRotate = false;
+						currentShape.setRotateCenter(p);
+						currentShape.angle--;
+						repaint();
+					}else {
+						currentShape.isCenterRotate = true;
+						currentShape.shapeState = ShapeRoot.STABLE_STATE;
+					}*/
+				}
 				break;
 			case ShapeRoot.STABLE_STATE:
 				//稳定状态的图形要一直判断自己的状态，万一不再稳定了呢？

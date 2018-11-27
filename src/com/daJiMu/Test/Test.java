@@ -6,8 +6,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.*;
 
+import com.daJiMu.shapes.ShapeRoot;
+
 public class Test {
 	
+	public static Double wi;
+	public static Double he;
 
 	static DrawComponent drp = new DrawComponent();
 	
@@ -21,8 +25,8 @@ public class Test {
 			Toolkit kit = Toolkit.getDefaultToolkit();
 			Dimension screenSize = kit.getScreenSize();
 			
-			Double wi = screenSize.getWidth();
-			Double he = screenSize.getHeight();
+			wi = screenSize.getWidth();
+			he = screenSize.getHeight();
 			
 			// 3:ÉèÖÃ´°¿ÚµÄ³ß´ç
 			frame.setSize(wi.intValue(),he.intValue());
@@ -50,10 +54,14 @@ public class Test {
 				int code = e.getKeyCode();
 				switch (code) {
 				case KeyEvent.VK_Q:
-					turnRight(DrawComponent.currentShape.angle);
+					if (DrawComponent.currentShape.shapeState != ShapeRoot.STABLE_STATE) {
+						turnRight(DrawComponent.currentShape.angle);
+					}
 					break;
 				case KeyEvent.VK_E:
-					turnLeft(DrawComponent.currentShape.angle);
+					if (DrawComponent.currentShape.shapeState != ShapeRoot.STABLE_STATE) {
+						turnLeft(DrawComponent.currentShape.angle);
+					}
 					break;
 				}
 			}
